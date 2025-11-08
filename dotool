@@ -2,10 +2,23 @@
 MIN_DELAY="0.03"
 MAX_DELAY="0.11"
 DOTOOL_COMMAND="sudo dotoolc"
+ACTION=""
 BUTTON_IN=""
-while getopts "b:" opt; do
+while getopts "p:r:c:" opt; do
   case "$opt" in
-    b)
+    p)
+      if [ -n "$ACTION" ]; then exit 1; fi
+      ACTION="press"
+      BUTTON_IN="$OPTARG"
+      ;;
+    r)
+      if [ -n "$ACTION" ]; then exit 1; fi
+      ACTION="release"
+      BUTTON_IN="$OPTARG"
+      ;;
+    c)
+      if [ -n "$ACTION" ]; then exit 1; fi
+      ACTION="click"
       BUTTON_IN="$OPTARG"
       ;;
     \?)
@@ -13,7 +26,7 @@ while getopts "b:" opt; do
       ;;
   esac
 done
-if [ -z "$BUTTON_IN" ]; then
+if [ -z "$ACTION" ] || [ -z "$BUTTON_IN" ]; then
     exit 1
 fi
 BUTTON_OUT=""
@@ -31,11 +44,17 @@ case "$BUTTON_IN" in
         exit 1
         ;;
 esac
-CLICK_DURATION=$(awk -v min="$MIN_DELAY" -v max="$MAX_DELAY" -v seed="$(date +%s%N)" '
-BEGIN{
-    srand(seed);
-    print min + rand() * (max - min)
-}')
-echo "buttondown $BUTTON_OUT" | $DOTOOL_COMMAND
-sleep "$CLICK_DURATION"
-echo "buttonup $BUTTON_OUT" | $DOTOOL_COMMAND
+if [ "$ACTION" = "press" ]; then
+    echo "buttondown $BUTTON_OUT" | $DOTOOL_COMMAND
+elif [ "$ACTION" = "release" ]; then
+    echo "buttonup $BUTTON_OUT" | $DOTOOL_COMMAND
+elif [ "$ACTION" = "click" ]; then
+    CLICK_DURATION=$(awk -v min="$MIN_DELAY" -v max="$MAX_DELAY" -v seed="$(date +%s%N)" '
+    BEGIN{
+        srand(seed);
+        print min + rand() * (max - min)
+    }')
+    echo "buttondown $BUTTON_OUT" | $DOTOOL_COMMAND
+    sleep "$CLICK_DURATION"
+    echo "buttonup $BUTTON_OUT" | $DOTOOL_COMMAND
+fi
