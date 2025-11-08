@@ -1,6 +1,6 @@
 #!/bin/bash
-MIN_DELAY="0.03"
-MAX_DELAY="0.11"
+MIN_DELAY="0.07"
+MAX_DELAY="0.15"
 DOTOOL_COMMAND="sudo dotoolc"
 ACTION=""
 BUTTON_IN=""
