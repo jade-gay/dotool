@@ -1,0 +1,41 @@
+#!/bin/bash
+MIN_DELAY="0.03"
+MAX_DELAY="0.11"
+DOTOOL_COMMAND="sudo dotoolc"
+BUTTON_IN=""
+while getopts "b:" opt; do
+  case "$opt" in
+    b)
+      BUTTON_IN="$OPTARG"
+      ;;
+    \?)
+      exit 1
+      ;;
+  esac
+done
+if [ -z "$BUTTON_IN" ]; then
+    exit 1
+fi
+BUTTON_OUT=""
+case "$BUTTON_IN" in
+    1)
+        BUTTON_OUT="1"
+        ;;
+    2)
+        BUTTON_OUT="3"
+        ;;
+    3)
+        BUTTON_OUT="2"
+        ;;
+    *)
+        exit 1
+        ;;
+esac
+CLICK_DURATION=$(awk -v min="$MIN_DELAY" -v max="$MAX_DELAY" -v seed="$(date +%s%N)" '
+BEGIN{
+    srand(seed);
+    print min + rand() * (max - min)
+}')
+echo "buttondown $BUTTON_OUT" | $DOTOOL_COMMAND
+sleep "$CLICK_DURATION"
+echo "buttonup $BUTTON_OUT" | $DOTOOL_COMMAND
